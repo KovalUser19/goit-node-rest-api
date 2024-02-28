@@ -1,38 +1,39 @@
-import fs from "fs/promises";
+/* import fs from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "url"; */
+import Contact from "../models/contacts.js";
 import crypto from "crypto";
 
-const __filename = fileURLToPath(import.meta.url);
+/* const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
 
-const contactsPath = path.join(__dirname, "../db/contacts.json");
+const contactsPath = path.join(__dirname, "../db/contacts.json"); */
 
-async function readContacts() {
-   const data = await fs.readFile(contactsPath, { encoding: "utf-8" });
+/* async function readContacts() {
+   const data = await Contact.readFile(contactsPath, { encoding: "utf-8" });
    return JSON.parse(data);
-}
+} */
 
-async function writeContacts(contacts) {
+/* async function writeContacts(contacts) {
    const data = fs.writeFile(
       contactsPath,
       JSON.stringify(contacts, undefined, 2)
    );
    return data;
-}
+} */
 
-async function listContacts() {
+/* async function listContacts() {
    const contacts = await readContacts();
    return contacts;
-}
+} */
 
-async function getContactById(contactId) {
+/* async function getContactById(contactId) {
    const contacts = await readContacts();
    return contacts.find((contact) => contact.id === contactId);
-}
+} */
 
-async function removeContact(contactId) {
+/* async function removeContact(contactId) {
    const contacts = await readContacts();
    const contactIndex = contacts.findIndex(
       (contact) => contact.id === contactId
@@ -44,17 +45,17 @@ async function removeContact(contactId) {
    } else {
       return null;
    }
-}
+} */
 
-async function addContact({ name, email, phone }) {
+/* async function addContact({ name, email, phone }) {
    const contacts = await readContacts();
    const newContact = { id: crypto.randomUUID(), name, email, phone };
    contacts.push(newContact);
    await writeContacts(contacts);
    return newContact;
-}
+} */
 
-async function updateContact(contactId, { name, email, phone }) {
+/* async function updateContact(contactId, { name, email, phone }) {
    const contacts = await readContacts();
    const updatedIndex = contacts.findIndex(
       (contact) => contact.id === contactId
@@ -82,3 +83,4 @@ const contactsServices = {
    updateContact,
 };
 export default contactsServices;
+ */

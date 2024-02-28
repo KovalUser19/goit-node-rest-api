@@ -1,12 +1,22 @@
-import contactsServices from "../services/contactsServices.js";
+import Contact from "../models/contacts.js";
+/* import contactsServices from "../services/contactsServices.js"; */
 import crypto from "crypto";
 import createContactSchema, {
    updateContactSchema,
 } from "../schemas/contactsSchemas.js";
+/* import { cache } from "joi"; */
 
-export const getAllContacts = async (req, res) => {
+/* export const getAllContacts = async (req, res) => {
    const contacts = await contactsServices.listContacts();
    res.send(contacts);
+}; */
+export const getAllContacts = async (reg, res, next) => {
+   try {
+      const contacts = await Contact.find();
+      res.send(contacts);
+   } catch (error) {
+      next(error);
+   }
 };
 
 export const getOneContact = async (req, res) => {
