@@ -1,3 +1,4 @@
+import { exist } from "joi";
 import mongoose from "mongoose";
 
 const DB_URI = process.env.DB_URI;
