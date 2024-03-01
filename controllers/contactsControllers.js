@@ -65,7 +65,7 @@ export const updateContact = async (req, res) => {
    if (typeof error !== "undefined") {
       return res.status(400).send("Validation error");
    }
-   if (!(await Contact.findById(id))) {
+   if (!(await Contact.findByIdAndUpdate(id, req.body, { new: true }))) {
       return res.status(404).send("Not found");
    }
    const contact = await Contact.findByIdAndUpdate(id, req.body, { new: true });
