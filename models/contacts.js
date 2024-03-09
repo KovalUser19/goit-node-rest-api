@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+/* import mongoose from "mongoose"; */
+import mongoose, { Schema } from "mongoose";
 
 const ContactShema = new mongoose.Schema({
    name: {
@@ -14,6 +15,10 @@ const ContactShema = new mongoose.Schema({
    favorite: {
       type: Boolean,
       default: false,
+   },
+   owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
    },
 });
 

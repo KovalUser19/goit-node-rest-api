@@ -3,9 +3,9 @@ import createContactSchema, {
    updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 
-export const getAllContacts = async (reg, res, next) => {
+export const getAllContacts = async (req, res, next) => {
    try {
-      const contacts = await Contact.find();
+      const contacts = await Contact.find({ owner: req.user.id });
       res.send(contacts);
    } catch (error) {
       next(error);
@@ -19,6 +19,11 @@ export const getOneContact = async (req, res) => {
       if (contact === null) {
          return res.status(404).send({ message: "Contact not found" });
       }
+
+      if (contact.owner.toString() !== req.user.id) {
+         return res.status(404).send("Contact not found");
+      }
+
       res.send(contact);
    } catch (error) {
       console.log(error);
@@ -42,7 +47,7 @@ export const deleteContact = async (req, res) => {
 
 export const createContact = async (req, res, next) => {
    const { name, email, phone } = req.body;
-   console.log(req.body);
+
    const { value, error } = createContactSchema.validate(req.body);
    if (typeof error !== "undefined") {
       return res.status(400).send("validation error");
@@ -58,10 +63,12 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res) => {
    const { id } = req.params;
    const { name, email, phone } = req.body;
+
    if (!name && !email && !phone) {
       return res.status(400).send("Body must have at least one field");
    }
    const { value, error } = updateContactSchema.validate(req.body);
+
    if (typeof error !== "undefined") {
       return res.status(400).send("Validation error");
    }
