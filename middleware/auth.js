@@ -25,11 +25,7 @@ function auth(req, res, next) {
       }
       try {
          const user = await User.findById(decode.id);
-         if (user === null) {
-            return res.status(401).send({ message: "Not authorized" });
-         }
-
-         if (user.token !== token) {
+         if (user === null || user.token !== token) {
             return res.status(401).send({ message: "Not authorized" });
          }
 
@@ -39,7 +35,8 @@ function auth(req, res, next) {
          };
          next();
       } catch (error) {
-         return res.status(500).send({ message: "Server error" });
+         /*  return res.status(500).send({ message: "Server error" }); */
+         next();
       }
    });
 }
