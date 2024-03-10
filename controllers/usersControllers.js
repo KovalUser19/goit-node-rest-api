@@ -88,3 +88,18 @@ export const logout = async (req, res, next) => {
       next(error);
    }
 };
+
+export const current = async (req, res, next) => {
+   try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+         return res.status(401).send({ message: "Not authorized" });
+      }
+      res.status(200).send({
+         email: user.email,
+         subscription: user.subscription,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

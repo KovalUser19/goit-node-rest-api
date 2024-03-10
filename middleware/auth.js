@@ -25,6 +25,7 @@ function auth(req, res, next) {
       }
       try {
          const user = await User.findById(decode.id);
+         console.log(user);
          if (user === null || user.token !== token) {
             return res.status(401).send({ message: "Not authorized" });
          }
@@ -35,10 +36,8 @@ function auth(req, res, next) {
          };
          next();
       } catch (error) {
-         /*  return res.status(500).send({ message: "Server error" }); */
-         next();
+         return res.status(500).send({ message: "Server error" });
       }
    });
 }
-
 export default auth;
