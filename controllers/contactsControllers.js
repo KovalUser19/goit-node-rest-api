@@ -37,6 +37,10 @@ export const deleteContact = async (req, res) => {
       const contact = await Contact.findByIdAndDelete(id);
       if (contact === null) {
          res.status(404).send({ message: "Not found" });
+      }
+
+      if (contact.owner.toString() !== req.user.id) {
+         return res.status(404).send("Contact not found");
       } else {
          res.status(200).send(contact);
       }
@@ -47,13 +51,14 @@ export const deleteContact = async (req, res) => {
 
 export const createContact = async (req, res, next) => {
    const { name, email, phone } = req.body;
+   const owner = req.user.id;
 
-   const { value, error } = createContactSchema.validate(req.body);
+   const { value, error } = createContactSchema.validate(req.body, { owner });
    if (typeof error !== "undefined") {
       return res.status(400).send("validation error");
    }
    try {
-      const contact = await Contact.create(req.body);
+      const contact = await Contact.create({ ...req.body, owner });
       res.status(201).send(contact);
    } catch (error) {
       next(error);
@@ -72,10 +77,16 @@ export const updateContact = async (req, res) => {
    if (typeof error !== "undefined") {
       return res.status(400).send("Validation error");
    }
+
    if (!(await Contact.findByIdAndUpdate(id, req.body, { new: true }))) {
       return res.status(404).send("Not found");
    }
+
    const contact = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+
+   if (contact.owner.toString() !== req.user.id) {
+      return res.status(404).send("Contact not found");
+   }
    res.status(200).send(contact);
 };
 
@@ -90,6 +101,9 @@ export const updateStatusContact = async (req, res, next) => {
       const statusContact = await Contact.findByIdAndUpdate(id, req.body, {
          new: true,
       });
+      if (statusContact.owner.toString() !== req.user.id) {
+         return res.status(404).send("Contact not found");
+      }
       res.status(200).send(statusContact);
    } catch (error) {
       next(error);

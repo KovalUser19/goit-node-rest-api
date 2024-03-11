@@ -1,4 +1,5 @@
-import bcrypt from "bcrypt";
+/* import bcrypt from "bcrypt"; */
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js";
 import { userSchema } from "../schemas/contactsSchemas.js";
@@ -53,9 +54,10 @@ export const login = async (req, res, next) => {
          return res.status(401).send({ message: "Email or password is wrong" });
       }
       const isMatch = await bcrypt.compare(password, user.password);
+      console.log(user.password);
 
       if (isMatch === false) {
-         return res.status(401).send({ message: "Email or password is wrong" });
+         return res.status(401).send({ message: " wrong" });
       }
       const token = jwt.sign(
          {
