@@ -1,8 +1,12 @@
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 /* import bcrypt from "bcrypt"; */
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js";
 import { userSchema } from "../schemas/contactsSchemas.js";
+import gravatar from "gravatar";
+import Jimp from "jimp";
 
 export const register = async (req, res, next) => {
    const { email, password, subscription } = req.body;
@@ -10,6 +14,7 @@ export const register = async (req, res, next) => {
 
    const { value, error } = userSchema.validate(req.body);
    if (typeof error !== "undefined") {
+      console.log(error);
       return res.status(400).send("validation error");
    }
 
@@ -26,6 +31,7 @@ export const register = async (req, res, next) => {
          email: normalizedEmail,
          password: passwordHash,
          subscription: subscription,
+         avatarURL: getDefaultAvatarURL(normalizedEmail),
       });
 
       res.status(201).send({
@@ -36,6 +42,15 @@ export const register = async (req, res, next) => {
       });
    } catch (error) {
       next(error);
+   }
+};
+
+export const getDefaultAvatarURL = async (email) => {
+   try {
+      const url = gravatar.url(email);
+      return url;
+   } catch (error) {
+      console.error("Error generating default avatar URL:", error.message);
    }
 };
 
@@ -101,6 +116,46 @@ export const current = async (req, res, next) => {
          email: user.email,
          subscription: user.subscription,
       });
+   } catch (error) {
+      next(error);
+   }
+};
+export const getAvatar = async (req, res, next) => {
+   try {
+      const user = await User.findById(req.user.id);
+      if (user === null) {
+         return res.status(404).send({ message: "User not found" });
+      }
+      if (user.avatarURL === null) {
+         return res.status(404).send({ message: "Avatar not found" });
+      }
+      res.sendFile(path.join(process.cwd(), "public/avatars", user.avatarURL));
+   } catch (error) {
+      next(error);
+   }
+};
+
+export const uploadAvatar = async (req, res, next) => {
+   try {
+      Jimp.read(req.file.path, (err, image) => {
+         if (err) throw err;
+         image
+            .resize(250, 250)
+            .write(
+               path.join(process.cwd(), "public/avatars", req.file.filename) +
+                  "small.jpg"
+            );
+      });
+
+      const user = await User.findByIdAndUpdate(
+         req.user.id,
+         { avatarURL: req.file.filename },
+         { new: true }
+      );
+      if (user === null) {
+         return res.status(404).send({ message: "User not found" });
+      }
+      res.send(user);
    } catch (error) {
       next(error);
    }
