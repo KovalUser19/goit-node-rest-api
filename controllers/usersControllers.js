@@ -1,12 +1,22 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-/* import bcrypt from "bcrypt"; */
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js";
 import { userSchema } from "../schemas/contactsSchemas.js";
 import gravatar from "gravatar";
 import Jimp from "jimp";
+import nodemailer from "nodemailer";
+import { nanoid } from "nanoid";
+
+const transport = nodemailer.createTransport({
+   host: "sandbox.smtp.mailtrap.io",
+   port: 2525,
+   auth: {
+      user: process.env.MAILTRAP_USER,
+      pass: process.env.MAILTRAP_PASSWORD,
+   },
+});
 
 export const register = async (req, res, next) => {
    const { email, password, subscription } = req.body;
@@ -26,12 +36,22 @@ export const register = async (req, res, next) => {
       }
 
       const passwordHash = await bcrypt.hash(password, 10);
+      const verifyToken = nanoid();
+
+      await transport.sendMail({
+         to: email,
+         from: "koval19101975@gmail.com",
+         subject: "Welcome to your contacts",
+         html: `To confirm you registration please click on the <a href="http://localhost:3000/users/verify/${verifyToken}">link</a>`,
+         text: `To confirm you registration please open the link http://localhost:3000/users/verify/${verifyToken}`,
+      });
 
       const userCreate = await User.create({
          email: normalizedEmail,
          password: passwordHash,
          subscription: subscription,
          avatarURL: getDefaultAvatarURL(normalizedEmail),
+         verificationToken: verifyToken,
       });
 
       res.status(201).send({
@@ -156,6 +176,26 @@ export const uploadAvatar = async (req, res, next) => {
          return res.status(404).send({ message: "User not found" });
       }
       res.send(user);
+   } catch (error) {
+      next(error);
+   }
+};
+
+export const verifyEmail = async (req, res, next) => {
+   const { token } = req.params;
+
+   try {
+      const user = await User.findOne({ verificationToken: token });
+
+      if (user === null) {
+         return res.status(404).send({ message: "Not found" });
+      }
+
+      await User.findByIdAndUpdate(user.id, {
+         verify: true,
+         verificationToken: null,
+      });
+      res.send({ message: "Email confirm successfully" });
    } catch (error) {
       next(error);
    }
