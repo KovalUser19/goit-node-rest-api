@@ -94,6 +94,12 @@ export const login = async (req, res, next) => {
       if (isMatch === false) {
          return res.status(401).send({ message: " wrong" });
       }
+
+      if (user.verify === false) {
+         return res
+            .status(401)
+            .send({ message: "Your account is not verified" });
+      }
       const token = jwt.sign(
          {
             id: user._id,
