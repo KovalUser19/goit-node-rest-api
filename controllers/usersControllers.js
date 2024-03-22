@@ -57,7 +57,7 @@ export const register = async (req, res, next) => {
       res.status(201).send({
          user: {
             email: normalizedEmail,
-            subscription: user.subscription,
+            subscription: "starter",
          },
       });
    } catch (error) {
@@ -92,7 +92,7 @@ export const login = async (req, res, next) => {
       console.log(user.password);
 
       if (isMatch === false) {
-         return res.status(401).send({ message: " wrong" });
+         return res.status(401).send({ message: "Wrong" });
       }
 
       if (user.verify === false) {
@@ -188,20 +188,46 @@ export const uploadAvatar = async (req, res, next) => {
 };
 
 export const verifyEmail = async (req, res, next) => {
-   const { token } = req.params;
+   const { verificationToken } = req.params;
 
    try {
-      const user = await User.findOne({ verificationToken: token });
+      const user = await User.findOne({ verificationToken: verificationToken });
 
       if (user === null) {
          return res.status(404).send({ message: "Not found" });
       }
 
-      await User.findByIdAndUpdate(user.id, {
+      await User.findByIdAndUpdate(user._id, {
          verify: true,
          verificationToken: null,
       });
       res.send({ message: "Email confirm successfully" });
+   } catch (error) {
+      next(error);
+   }
+};
+
+export const resendVerify = async (req, res, next) => {
+   const { email } = req.body;
+   try {
+      const user = await User.findOne({ email: email });
+
+      if (user === null) {
+         return res.status(404).send({ message: "User not found" });
+      }
+
+      if (user.verify) {
+         return res.status(401).send({ message: "Your account verif" });
+      }
+
+      await transport.sendMail({
+         to: email,
+         from: "koval19101975@gmail.com",
+         subject: "Welcome to your contacts",
+         html: `To confirm you registration please click on the <a href="http://localhost:3000/users/verify/${user.verificationToken}">link</a>`,
+         text: `To confirm you registration please open the link http://localhost:3000/users/verify/${user.verificationToken}`,
+      });
+      res.status(200).send({ message: "Verification email sent" });
    } catch (error) {
       next(error);
    }
