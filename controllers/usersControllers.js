@@ -45,12 +45,12 @@ export const register = async (req, res, next) => {
          html: `To confirm you registration please click on the <a href="http://localhost:3000/users/verify/${verifyToken}">link</a>`,
          text: `To confirm you registration please open the link http://localhost:3000/users/verify/${verifyToken}`,
       });
-
+      const avatarURL = await getDefaultAvatarURL(normalizedEmail);
       const userCreate = await User.create({
          email: normalizedEmail,
          password: passwordHash,
          subscription: subscription,
-         avatarURL: getDefaultAvatarURL(normalizedEmail),
+         avatarURL: avatarURL,
          verificationToken: verifyToken,
       });
 
